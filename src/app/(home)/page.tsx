@@ -2,15 +2,24 @@ import Pagination from "@/components/pagination";
 import RepoCard from "@/components/repo-card";
 import ResponseType from "@/types/response.type";
 
+type Props = {
+  topic: string;
+  sort: string;
+  page: string;
+  order: string;
+  title?: string;
+};
+
 async function fetchRepo({
   topic = "ai",
   sort = "stars",
   page = "1",
   order = "desc",
-}) {
+  title,
+}: Props) {
   const baseUrl = new URL("https://api.github.com/search/repositories");
   const query = new URLSearchParams({
-    q: "topic:" + topic,
+    q: "topic:" + topic + (title ? " " + title + " in:name" : ""),
     sort,
     order,
     per_page: "30",
@@ -34,9 +43,8 @@ export default async function Home({
     sort: searchParams.sort,
     page: searchParams.page,
     order: searchParams.order,
+    title: searchParams.title,
   });
-
-  const totalPage = Math.ceil(data.total_count / 30);
 
   return (
     <section>
@@ -56,7 +64,10 @@ export default async function Home({
           />
         ))}
       </div>
-      <Pagination total={totalPage} current={Number(searchParams.page) ?? 1} />
+      <Pagination
+        total={data.total_count}
+        current={Number(searchParams.page) || 1}
+      />
     </section>
   );
 }
